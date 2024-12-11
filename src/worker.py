@@ -3,8 +3,9 @@ import sys
 import logging
 
 from zwiftwrapper import Zwift
-from database import Storage
+from database import Database
 from pprint import pformat
+from garmin import Garmin
 
 class App:
     def __init__(self):
@@ -17,15 +18,23 @@ class App:
         #console_handler.setFormatter(formatter)
         #self.logger.addHandler(console_handler) 
 
-        username = os.environ.get("ZWIFT_USERNAME")
-        password = os.environ.get("ZWIFT_PASSWORD")
+        z_username = os.environ.get("ZWIFT_USERNAME")
+        z_password = os.environ.get("ZWIFT_PASSWORD")
 
-        if not username or not password:
+        g_username = os.environ.get("GARMIN_USERNAME")
+        g_password = os.environ.get("GARMIN_PASSWORD")
+
+        if not z_username or not z_password:
             logging.error("Missing environment variables. Please set ZWIFT_USERNAME and ZWIFT_PASSWORD.")
             sys.exit(1)
 
-        self.zwift = Zwift(username, password)
-        self.db = Storage()
+        if not g_username or not g_password:
+            logging.error("Missing environment variables. Please set GARMIN_USERNAME and GARMIN_PASSWORD.")
+            sys.exit(1)
+
+        self.zwift = Zwift(z_username, z_password)
+        self.garmin = Garmin(g_username, g_password)
+        self.db = Database()
 
 
     def process_activity(self, activity):
@@ -35,7 +44,9 @@ class App:
         self.logger.info("Working on activity ID: {}".format(activity['id']))
         fitfile = self.zwift.get_activity(activity['id'])
         fitfile.change_manufacturer()
-        fitfile.fitfile.to_file("{}.fit".format(activity['id']))       
+        fitfile.fitfile.to_file("{}.fit".format(activity['id']))
+        
+        self.garmin.upload_fitfile(fitfile)
 
         self.db.add(activity['id'])
 

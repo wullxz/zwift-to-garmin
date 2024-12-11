@@ -1,6 +1,6 @@
 import sqlite3
 
-class Storage: 
+class Database: 
     def __init__(self):
         self.conn = sqlite3.connect('activities.db')
         self.cursor = self.conn.cursor()
