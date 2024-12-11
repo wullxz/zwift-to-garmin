@@ -1,0 +1,4 @@
+requests
+fit-tool
+sqlite3
+zwift_client
