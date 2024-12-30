@@ -1,4 +1,7 @@
 requests
 fit-tool
 garth
--e https://github.com/wullxz/zwift-client.git@da13725688c0440a6e1fc4f2b8e959830204149d#egg=zwift_client
+-e git+https://github.com/wullxz/zwift-client.git@da13725688c0440a6e1fc4f2b8e959830204149d#egg=zwift_client
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib

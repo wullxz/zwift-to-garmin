@@ -6,17 +6,14 @@ from zwiftwrapper import Zwift
 from database import Database
 from pprint import pformat
 from garmin import Garmin
+from util import Util
 
 class App:
     def __init__(self):
         # Set up logging
         self.logger = logging.getLogger('my_app')
         self.logger.setLevel(logging.INFO)
-        #console_handler = logging.StreamHandler()
-        #console_handler.setLevel(logging.INFO)
-        #formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-        #console_handler.setFormatter(formatter)
-        #self.logger.addHandler(console_handler) 
+        Util.create_environment()
 
         z_username = os.environ.get("ZWIFT_USERNAME")
         z_password = os.environ.get("ZWIFT_PASSWORD")
@@ -58,14 +55,15 @@ class App:
         :return:
         """
 
+        while True:
+            self.logger.info("Starting Zwift data worker")
 
-        self.logger.info("Starting Zwift data worker")
+            activities = self.zwift.get_activities()
 
-        activities = self.zwift.get_activities()
-
-        for activity in activities:
-            #logger.info("Processing activity:\n{}".format(pformat(activity, indent=4)))
-            self.process_activity(activity)
+            for activity in activities:
+                #logger.info("Processing activity:\n{}".format(pformat(activity, indent=4)))
+                self.process_activity(activity)
+            time.sleep(3600)
 
 if __name__ == "__main__":
     app = App()
