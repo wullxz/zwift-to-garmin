@@ -1,5 +1,7 @@
 .venv
 __py_cache__
 *.pyc
+*.fit
 .vscode
 activities.db
+src/.env
