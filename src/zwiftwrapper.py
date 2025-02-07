@@ -1,3 +1,4 @@
+from util import Util
 from zwift import Client
 import requests
 import logging
@@ -14,9 +15,12 @@ class ZwiftActivity:
     def __init__(self, activity_id, activity_data):
         self.activity_id = activity_id
         self.activity_data = activity_data
-        self.fitfile = FitFile.from_bytes(self.activity_data)
 
-    def change_manufacturer(self):
+    # This has problems with some fit files from zwift containing developer fields.
+    # I'm not using it at the moment for that reason.
+    #TODO: only fall back to fitfiletools if this fails.
+    def change_manufacturer_fittool(self):
+        self.fitfile = FitFile.from_bytes(self.activity_data)
         # We have to change the manufacturer and product in both the file id and device info
         device = [f for f in self.fitfile.records if isinstance(f.message, DeviceInfoMessage)][0]
         device.message.manufacturer = Manufacturer.GARMIN
@@ -27,6 +31,37 @@ class ZwiftActivity:
         fileid.message.product = GarminProduct.EDGE_1030
 
         self.recalculate_crc()
+        return self
+
+    def change_manufacturer(self):
+        manufacturer = 1
+        product = 2713
+        logger = Util.get_logger()
+
+        # Send the fitfile to fitfiletools.com
+        response = requests.post(
+            'https://www.fitfiletools.com/tools/devicechanger',
+            headers=
+                {'Accept': 'application/json, text/plain, */*',
+                 'Referer': 'https://www.fitfiletools.com/',
+                 'Origin': 'https://www.fitfiletools.com',
+                 'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36',
+                 'Connection': 'keep-alive'
+                },
+            files={'file': ('activity.fit', self.activity_data)},
+            params={'mfgr': manufacturer, 'devicetype': product})
+
+        if response.status_code != 200:
+            logger.error(f'Failed to change manufacturer. Status code: {response.status_code}, response: {response.text}')
+            raise Exception(f'Failed to change manufacturer. Status code: {response.status_code}, response: {response.text}')
+        message = response.json()
+        if message.get('status') == 'success':
+            fiturl = message.get('file')
+            self.activity_data = download_file(fiturl)
+            logger.info(f"Successfully changed manufacturer to {manufacturer}, {product} for activity ID {self.activity_id}")
+        else:
+            logger.error(f"Failed to change manufacturer. Message: {message.get('message')}")
+
         return self
 
     def recalculate_crc(self) -> int:

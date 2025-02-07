@@ -17,13 +17,13 @@ class Gmail:
     def __init__(self):
         self.creds = None
         self.conf_dir = Util.get_conf_dir()
-        self.logger = logging.getLogger('my_app')
+        self.logger = Util.get_logger()
         # The file token.json stores the user's access and refresh tokens, and is
         # created automatically when the authorization flow completes for the first
         # time.
         if os.path.exists(self.conf_dir + 'gmail_token.json'):
-            self.logger.info("Trying to reuse saved gmail token.")
-            creds = Credentials.from_authorized_user_file(self.conf_dir + 'gmail_token.json', SCOPES)
+            self.logger.info("Trying to reuse saved gmail token. ({}).".format(self.conf_dir + 'gmail_token.json'))
+            self.creds = Credentials.from_authorized_user_file(self.conf_dir + 'gmail_token.json', SCOPES)
         # If there are no (valid) credentials available, let the user log in.
         if not self.creds or not self.creds.valid:
             self.logger.info("Gmail creds not found or not valid.")

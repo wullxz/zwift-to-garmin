@@ -22,7 +22,7 @@ class Garmin:
       self.logger.info("Restored Garmin login. Garmin username: {}".format(garth.client.username))
     except (GarthException, FileNotFoundError) as e:
       garth.login(self.username, self.password, prompt_mfa=lambda: self.get_garmin_code())
-      garth.save('~/.garth')
+      garth.save(conf_dir + '/.garth')
   
   def get_garmin_code(self):
     if Gmail.has_api_token():
@@ -37,7 +37,7 @@ class Garmin:
     tmp = tempfile.NamedTemporaryFile()
     with open(tmp.name, 'wb') as f:
       self.logger.info("Writing FIT file to temporary file: {}".format(f.name))
-      f.write(fitfile.fitfile.to_bytes())
+      f.write(fitfile.activity_data)
       f.seek(0)
     with open(tmp.name, 'rb') as f:
       try:

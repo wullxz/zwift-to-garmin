@@ -1,6 +1,7 @@
 import os
 import sys
 import logging
+import time
 
 from zwiftwrapper import Zwift
 from database import Database
@@ -41,7 +42,7 @@ class App:
         self.logger.info("Working on activity ID: {}".format(activity['id']))
         fitfile = self.zwift.get_activity(activity['id'])
         fitfile.change_manufacturer()
-        fitfile.fitfile.to_file("{}.fit".format(activity['id']))
+        #fitfile.fitfile.to_file("{}.fit".format(activity['id']))
         
         self.garmin.upload_fitfile(fitfile)
 
